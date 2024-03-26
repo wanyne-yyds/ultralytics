@@ -136,6 +136,7 @@ class OBB(Detect):
         if not self.training:
             self.angle = angle
         x = self.detect(self, x)
+        # 后处理位置
         if self.training:
             return x, angle
         return torch.cat([x, angle], 1) if self.export else (torch.cat([x[0], angle], 1), (x[1], angle))
