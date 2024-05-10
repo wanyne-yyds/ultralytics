@@ -42,8 +42,16 @@ class Detect(nn.Module):
 
     def forward(self, x):
         """Concatenates and returns predicted bounding boxes and class probabilities."""
+        output = []
         for i in range(self.nl):
-            x[i] = torch.cat((self.cv2[i](x[i]), self.cv3[i](x[i])), 1)
+            cv2 = self.cv2[i](x[i])
+            cv3 = self.cv3[i](x[i])
+            output.append(cv2)
+            output.append(cv3.sigmoid())
+            x[i] = torch.cat((cv2, cv3), 1)
+
+        # if self.export and self.format in {"onnx"}:
+        #     return output
         if self.training:  # Training path
             return x
 
@@ -107,8 +115,23 @@ class Segment(Detect):
         p = self.proto(x[0])  # mask protos
         bs = p.shape[0]  # batch size
 
+        output = []
+        for i in range(self.nl):
+            m = self.cv4[i](x[i])
+            output.append(m)
+
         mc = torch.cat([self.cv4[i](x[i]).view(bs, self.nm, -1) for i in range(self.nl)], 2)  # mask coefficients
         x = self.detect(self, x)
+
+        if self.export and self.format in {"onnx"}:
+            class_sum_0 = torch.clamp(torch.sum(x[1], dim=1, keepdim=True), min=0, max=1)
+            class_sum_1 = torch.clamp(torch.sum(x[3], dim=1, keepdim=True), min=0, max=1)
+            class_sum_2 = torch.clamp(torch.sum(x[5], dim=1, keepdim=True), min=0, max=1)
+            return [x[0], x[1], class_sum_0, output[0],
+                    x[2], x[3], class_sum_1, output[1],
+                    x[4], x[5], class_sum_2, output[2],
+                    p]
+
         if self.training:
             return x, mc, p
         return (torch.cat([x, mc], 1), p) if self.export else (torch.cat([x[0], mc], 1), (x[1], mc, p))
@@ -129,6 +152,10 @@ class OBB(Detect):
     def forward(self, x):
         """Concatenates and returns predicted bounding boxes and class probabilities."""
         bs = x[0].shape[0]  # batch size
+        output = []
+        for i in range(self.nl):
+            ang = self.cv4[i](x[i])
+            output.append(ang.sigmoid())
         angle = torch.cat([self.cv4[i](x[i]).view(bs, self.ne, -1) for i in range(self.nl)], 2)  # OBB theta logits
         # NOTE: set `angle` as an attribute so that `decode_bboxes` could use it.
         angle = (angle.sigmoid() - 0.25) * math.pi  # [-pi/4, 3pi/4]
@@ -136,7 +163,14 @@ class OBB(Detect):
         if not self.training:
             self.angle = angle
         x = self.detect(self, x)
-        # 后处理位置
+
+        if self.export and self.format in {"onnx"}:
+            return [
+                x[0], x[1], output[0],
+                x[2], x[3], output[1],
+                x[4], x[5], output[2],
+            ]
+
         if self.training:
             return x, angle
         return torch.cat([x, angle], 1) if self.export else (torch.cat([x[0], angle], 1), (x[1], angle))

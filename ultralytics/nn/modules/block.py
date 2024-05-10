@@ -175,7 +175,14 @@ class SPPF(nn.Module):
         y1 = self.m(x)
         y2 = self.m(y1)
         return self.cv2(torch.cat((x, y1, y2, self.m(y2)), 1))
-
+        # x = self.cv1(x)
+        # y1 = self.m(x)
+        # y2 = self.m(y1)
+        # y3 = self.m(y2)
+        # y4 = self.m(y3)
+        # y5 = self.m(y4)
+        # y6 = self.m(y5)
+        # return self.cv2(torch.cat((x, y2, y4, y6), 1))
 
 class C1(nn.Module):
     """CSP Bottleneck with 1 convolution."""
@@ -227,9 +234,15 @@ class C2f(nn.Module):
 
     def forward(self, x):
         """Forward pass through C2f layer."""
-        y = list(self.cv1(x).chunk(2, 1))
-        y.extend(m(y[-1]) for m in self.m)
-        return self.cv2(torch.cat(y, 1))
+        # y = list(self.cv1(x).chunk(2, 1))
+        # y.extend(m(y[-1]) for m in self.m)
+        # return self.cv2(torch.cat(y, 1))
+
+        x = self.cv1(x)
+        x = [x, x[:, self.c:, ...]]
+        x.extend(m(x[-1]) for m in self.m)
+        x.pop(1)
+        return self.cv2(torch.cat(x, 1))
 
     def forward_split(self, x):
         """Forward pass using split() instead of chunk()."""

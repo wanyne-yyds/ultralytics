@@ -587,3 +587,52 @@ def convert_json_to_yolo_obb(data_root_path: str):
                 g.write(f"{class_idx} {' '.join(formatted_coords)}\n")
 
     LOGGER.info(f"JSON data converted successfully.\nResults saved to {data_root_path.resolve()}")
+
+def convert_json_to_yolo_seg(data_root_path: str):
+    """
+    Converts Labeml JSON data to YOLO segmentation format.
+    """
+    data_root_path = Path(data_root_path)
+
+    # Class names to indices mapping
+    class_mapping = {
+        "lane": 0,
+        }
+    
+    image_dir = data_root_path
+    save_dir = data_root_path / "labels"
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    image_paths = list(image_dir.rglob("*.*g"))
+    for image_path in TQDM(image_paths, desc=f"Processing images"):
+        if image_path.suffix not in [".jpg", ".png"]:
+            continue
+        img = cv2.imread(str(image_path))
+        h, w = img.shape[:2]
+        orig_label_path = image_path.with_suffix(".json")
+        save_file = Path(str(orig_label_path).replace(str(data_root_path), str(save_dir))).with_suffix(".txt")
+        save_file.parent.mkdir(parents=True, exist_ok=True)
+
+        if orig_label_path.is_file() == False:
+            save_file.open("w")
+            continue
+        
+        with Path(orig_label_path).open("r") as f, save_file.open("w") as g:
+            data = json.load(f)
+            shapes = data["shapes"]
+
+            yolo_lines = []
+            for shape in shapes:
+                label = shape["label"].rsplit("_", 1)[0]
+                class_idx = class_mapping[label]
+                points = shape["points"]
+                txt_string = f"{class_idx} "
+                for x, y in points:
+                    x /= w
+                    y /= h
+                    txt_string += f"{x:.6g} {y:.6g} "
+                yolo_lines.append(txt_string.strip() + "\n")
+
+            g.writelines(yolo_lines)
+
+    LOGGER.info(f"JSON data converted successfully.\nResults saved to {data_root_path.resolve()}")
