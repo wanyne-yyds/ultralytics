@@ -50,8 +50,8 @@ class Detect(nn.Module):
             output.append(cv3.sigmoid())
             x[i] = torch.cat((cv2, cv3), 1)
 
-        # if self.export and self.format in {"onnx"}:
-        #     return output
+        if self.export and self.format in {"onnx"}:
+            return output
         if self.training:  # Training path
             return x
 

@@ -54,6 +54,7 @@ from .conv import (
     Conv,
     Conv2,
     ConvTranspose,
+    InvertedResidual,
     DWConv,
     DWConvTranspose2d,
     Focus,
@@ -79,6 +80,7 @@ from .transformer import (
 __all__ = (
     "Conv",
     "Conv2",
+    "InvertedResidual",
     "LightConv",
     "RepConv",
     "DWConv",

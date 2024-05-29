@@ -31,6 +31,8 @@ def generate_ddp_file(trainer):
 overrides = {vars(trainer.args)}
 
 if __name__ == "__main__":
+    import sys
+    sys.path.insert(0, "/home/ultralytics")
     from {module} import {name}
     from ultralytics.utils import DEFAULT_CFG_DICT
 
