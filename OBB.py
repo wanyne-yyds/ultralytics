@@ -14,8 +14,13 @@ if __name__ == '__main__':
             '/home/ultralytics/runs/obb/MobilenetV2_OBB/weights/best.pt')
 
     elif platform.system().lower() == 'windows':
-        model = YOLO('E:/Code/ultralytics/ultralytics/cfg/models/v8/yolov8n-obb.yaml').load(
-            'E:/Code/ultralytics/runs/obb/Forgery_OBB2/weights/best.pt')
+        #TODO 需要更换 Conv 激活函数 ->  nn.ReLU6()
+        model = YOLO('E:/Code/ultralytics/ultralytics/cfg/models/v8/yolov8s-obb-mobilenetv2.yaml').load(
+            'E:/Code/ultralytics/runs/obb/MobilenetV2_OBB2/weights/best.pt')
+
+        #TODO 需要更换 Conv 激活函数 ->  nn.SiLU()
+        # model = YOLO('E:/Code/ultralytics/ultralytics/cfg/models/v8/yolov8n-obb.yaml').load(
+        #     'E:/Code/ultralytics/runs/obb/MEOBB_02/weights/best.pt')
 
     else:
         raise NotImplementedError
