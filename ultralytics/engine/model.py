@@ -1,17 +1,28 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
 import inspect
-import sys
 from pathlib import Path
-from typing import Union
+from typing import List, Union
 
 import numpy as np
 import torch
 
 from ultralytics.cfg import TASK2DATA, get_cfg, get_save_dir
+from ultralytics.engine.results import Results
 from ultralytics.hub.utils import HUB_WEB_ROOT
 from ultralytics.nn.tasks import attempt_load_one_weight, guess_model_task, nn, yaml_model_load
-from ultralytics.utils import ASSETS, DEFAULT_CFG_DICT, LOGGER, RANK, SETTINGS, callbacks, checks, emojis, yaml_load
+from ultralytics.utils import (
+    ARGV,
+    ASSETS,
+    DEFAULT_CFG_DICT,
+    LOGGER,
+    RANK,
+    SETTINGS,
+    callbacks,
+    checks,
+    emojis,
+    yaml_load,
+)
 
 
 class Model(nn.Module):
@@ -135,7 +146,7 @@ class Model(nn.Module):
             return
 
         # Load or create new YOLO model
-        if Path(model).suffix in (".yaml", ".yml"):
+        if Path(model).suffix in {".yaml", ".yml"}:
             self._new(model, task=task, verbose=verbose)
         else:
             self._load(model, task=task)
@@ -311,8 +322,9 @@ class Model(nn.Module):
             AssertionError: If the model is not a PyTorch model.
         """
         self._check_is_pytorch_model()
-        from ultralytics import __version__
         from datetime import datetime
+
+        from ultralytics import __version__
 
         updates = {
             "date": datetime.now().isoformat(),
@@ -388,7 +400,7 @@ class Model(nn.Module):
         stream: bool = False,
         predictor=None,
         **kwargs,
-    ) -> list:
+    ) -> List[Results]:
         """
         Performs predictions on the given image source using the YOLO model.
 
@@ -421,8 +433,8 @@ class Model(nn.Module):
             source = ASSETS
             LOGGER.warning(f"WARNING ⚠️ 'source' is missing. Using 'source={source}'.")
 
-        is_cli = (sys.argv[0].endswith("yolo") or sys.argv[0].endswith("ultralytics")) and any(
-            x in sys.argv for x in ("predict", "track", "mode=predict", "mode=track")
+        is_cli = (ARGV[0].endswith("yolo") or ARGV[0].endswith("ultralytics")) and any(
+            x in ARGV for x in ("predict", "track", "mode=predict", "mode=track")
         )
 
         custom = {"conf": 0.25, "batch": 1, "save": is_cli, "mode": "predict"}  # method defaults
@@ -446,7 +458,7 @@ class Model(nn.Module):
         stream: bool = False,
         persist: bool = False,
         **kwargs,
-    ) -> list:
+    ) -> List[Results]:
         """
         Conducts object tracking on the specified input source using the registered trackers.
 
@@ -561,7 +573,7 @@ class Model(nn.Module):
     def export(
         self,
         **kwargs,
-    ):
+    ) -> str:
         """
         Exports the model to a different format suitable for deployment.
 
@@ -577,7 +589,7 @@ class Model(nn.Module):
                 model's overrides and method defaults.
 
         Returns:
-            (object): The exported model in the specified format, or an object related to the export process.
+            (str): The exported model filename in the specified format, or an object related to the export process.
 
         Raises:
             AssertionError: If the model is not a PyTorch model.
@@ -630,7 +642,12 @@ class Model(nn.Module):
         checks.check_pip_update_available()
 
         overrides = yaml_load(checks.check_yaml(kwargs["cfg"])) if kwargs.get("cfg") else self.overrides
-        custom = {"data": DEFAULT_CFG_DICT["data"] or TASK2DATA[self.task]}  # method defaults
+        custom = {
+            # NOTE: handle the case when 'cfg' includes 'data'.
+            "data": overrides.get("data") or DEFAULT_CFG_DICT["data"] or TASK2DATA[self.task],
+            "model": self.overrides["model"],
+            "task": self.task,
+        }  # method defaults
         args = {**overrides, **custom, **kwargs, "mode": "train"}  # highest priority args on the right
         if args.get("resume"):
             args["resume"] = self.ckpt_path
@@ -656,7 +673,7 @@ class Model(nn.Module):
         self.trainer.hub_session = self.session  # attach optional HUB session
         self.trainer.train()
         # Update model and cfg after training
-        if RANK in (-1, 0):
+        if RANK in {-1, 0}:
             ckpt = self.trainer.best if self.trainer.best.exists() else self.trainer.last
             self.model, _ = attempt_load_one_weight(ckpt)
             self.overrides = self.model.args
@@ -723,7 +740,12 @@ class Model(nn.Module):
         """
         from ultralytics.nn.autobackend import check_class_names
 
-        return check_class_names(self.model.names) if hasattr(self.model, "names") else None
+        if hasattr(self.model, "names"):
+            return check_class_names(self.model.names)
+        if not self.predictor:  # export formats will not have predictor defined until predict() is called
+            self.predictor = self._smart_load("predictor")(overrides=self.overrides, _callbacks=self.callbacks)
+            self.predictor.setup_model(model=self.model, verbose=False)
+        return self.predictor.model.names
 
     @property
     def device(self) -> torch.device:

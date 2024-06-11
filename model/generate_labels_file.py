@@ -72,7 +72,7 @@ if __name__ == '__main__':
     # True: 保存 Txt 标签文件到 'output_dir' 目录; False: 保存 Json 标签文件到输入目录
     save_txt_file = True
     # True: 显示图片; False: 保存标签文件
-    show_images = False
+    show_images = True
 
     MED_CLASSES = {0:'blue_white', 1:'red_white', 2:'green_white', 3:'greenT'}
 
