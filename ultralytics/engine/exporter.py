@@ -70,7 +70,7 @@ from ultralytics.data.dataset import YOLODataset
 from ultralytics.data.utils import check_cls_dataset, check_det_dataset
 from ultralytics.nn.autobackend import check_class_names, default_class_names
 from ultralytics.nn.modules import C2f, Detect, RTDETRDecoder
-from ultralytics.nn.tasks import DetectionModel, SegmentationModel, OBBModel, WorldModel
+from ultralytics.nn.tasks import DetectionModel, OBBModel, SegmentationModel, WorldModel
 from ultralytics.utils import (
     ARM64,
     DEFAULT_CFG,
@@ -399,12 +399,20 @@ class Exporter:
         if isinstance(self.model, SegmentationModel):
             output_names = ["output0", "output1"]
         elif isinstance(self.model, OBBModel):
-            output_names = ["obj8", "cls8", "angle8",
-                            "obj16", "cls16", "angle16",
-                            "obj32", "cls32", "angle32",]
+            output_names = [
+                "obj8",
+                "cls8",
+                "angle8",
+                "obj16",
+                "cls16",
+                "angle16",
+                "obj32",
+                "cls32",
+                "angle32",
+            ]
         elif isinstance(self.model, DetectionModel):
             output_names = ["output0"]
-        
+
         dynamic = self.args.dynamic
         if dynamic:
             dynamic = {"images": {0: "batch", 2: "height", 3: "width"}}  # shape(1,3,640,640)

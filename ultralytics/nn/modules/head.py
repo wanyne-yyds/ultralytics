@@ -127,10 +127,21 @@ class Segment(Detect):
             class_sum_0 = torch.clamp(torch.sum(x[1], dim=1, keepdim=True), min=0, max=1)
             class_sum_1 = torch.clamp(torch.sum(x[3], dim=1, keepdim=True), min=0, max=1)
             class_sum_2 = torch.clamp(torch.sum(x[5], dim=1, keepdim=True), min=0, max=1)
-            return [x[0], x[1], class_sum_0, output[0],
-                    x[2], x[3], class_sum_1, output[1],
-                    x[4], x[5], class_sum_2, output[2],
-                    p]
+            return [
+                x[0],
+                x[1],
+                class_sum_0,
+                output[0],
+                x[2],
+                x[3],
+                class_sum_1,
+                output[1],
+                x[4],
+                x[5],
+                class_sum_2,
+                output[2],
+                p,
+            ]
 
         if self.training:
             return x, mc, p
@@ -165,9 +176,15 @@ class OBB(Detect):
 
         if self.export and self.format in {"onnx"}:
             return [
-                x[0], x[1], output[0],
-                x[2], x[3], output[1],
-                x[4], x[5], output[2],
+                x[0],
+                x[1],
+                output[0],
+                x[2],
+                x[3],
+                output[1],
+                x[4],
+                x[5],
+                output[2],
             ]
 
         if self.training:

@@ -559,9 +559,9 @@ def yolo_bbox2segment(im_dir, save_dir=None, sam_model="sam_b.pt"):
             with open(txt_file, "a") as f:
                 f.writelines(text + "\n" for text in texts)
     LOGGER.info(f"Generated segment labels saved in {save_dir}")
-    
-def convert_json_to_yolo_obb(data_root_path: str):
 
+
+def convert_json_to_yolo_obb(data_root_path: str):
     data_root_path = Path(data_root_path)
 
     # Class names to indices mapping
@@ -570,8 +570,8 @@ def convert_json_to_yolo_obb(data_root_path: str):
         "red_white": 1,
         "green_white": 2,
         "greenT": 3,
-        }
-    
+    }
+
     image_dir = data_root_path
     save_dir = data_root_path / "labels"
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -589,7 +589,7 @@ def convert_json_to_yolo_obb(data_root_path: str):
         if orig_label_path.is_file() == False:
             save_file.open("w")
             continue
-        
+
         with Path(orig_label_path).open("r") as f, save_file.open("w") as g:
             data = json.load(f)
             shapes = data["shapes"]
@@ -599,25 +599,22 @@ def convert_json_to_yolo_obb(data_root_path: str):
                 class_idx = class_mapping[label]
                 points = shape["points"]
                 coords = np.array(points).flatten()
-                normalized_coords = [
-                    coords[i] / w if i % 2 == 0 else coords[i] / h for i in range(len(coords))
-                ]
+                normalized_coords = [coords[i] / w if i % 2 == 0 else coords[i] / h for i in range(len(coords))]
                 formatted_coords = ["{:.6g}".format(coord) for coord in normalized_coords]
                 g.write(f"{class_idx} {' '.join(formatted_coords)}\n")
 
     LOGGER.info(f"JSON data converted successfully.\nResults saved to {data_root_path.resolve()}")
 
+
 def convert_json_to_yolo_seg(data_root_path: str):
-    """
-    Converts Labeml JSON data to YOLO segmentation format.
-    """
+    """Converts Labeml JSON data to YOLO segmentation format."""
     data_root_path = Path(data_root_path)
 
     # Class names to indices mapping
     class_mapping = {
         "lane": 0,
-        }
-    
+    }
+
     image_dir = data_root_path
     save_dir = data_root_path / "labels"
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -635,7 +632,7 @@ def convert_json_to_yolo_seg(data_root_path: str):
         if orig_label_path.is_file() == False:
             save_file.open("w")
             continue
-        
+
         with Path(orig_label_path).open("r") as f, save_file.open("w") as g:
             data = json.load(f)
             shapes = data["shapes"]

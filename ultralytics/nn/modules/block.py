@@ -175,6 +175,7 @@ class SPPF(nn.Module):
         y.extend(self.m(y[-1]) for _ in range(3))
         return self.cv2(torch.cat(y, 1))
 
+
 class C1(nn.Module):
     """CSP Bottleneck with 1 convolution."""
 
@@ -230,7 +231,7 @@ class C2f(nn.Module):
         # return self.cv2(torch.cat(y, 1))
 
         x = self.cv1(x)
-        x = [x, x[:, self.c:, ...]]
+        x = [x, x[:, self.c :, ...]]
         x.extend(m(x[-1]) for m in self.m)
         x.pop(1)
         return self.cv2(torch.cat(x, 1))
