@@ -55,12 +55,12 @@ def save_boxes_to_labelme_json(image_path, image_heighe, image_width, boxes, lab
 if __name__ == '__main__':
 
     #TODO 需要更换 Conv 激活函数 ->  nn.ReLU6()
-    # model = YOLO('E:/Code/ultralytics/ultralytics/cfg/models/v8/yolov8s-obb-mobilenetv2.yaml').load(
-    #     'E:/Code/ultralytics/runs/obb/MobilenetV2_OBB2/weights/last.pt')
+    model = YOLO('E:/Code/ultralytics/ultralytics/cfg/models/v8/yolov8s-obb-mobilenetv2.yaml').load(
+        'E:/Code/ultralytics/runs/obb/MobilenetV2_OBB2/weights/last.pt')
 
     #TODO 需要更换 Conv 激活函数 ->  nn.SiLU()
-    model = YOLO('E:/Code/ultralytics/ultralytics/cfg/models/v8/yolov8n-obb.yaml').load(
-        'E:/Code/ultralytics/runs/obb/MEOBB_02/weights/last.pt')
+    # model = YOLO('E:/Code/ultralytics/ultralytics/cfg/models/v8/yolov8n-obb.yaml').load(
+    #     'E:/Code/ultralytics/runs/obb/MEOBB_02/weights/last.pt')
 
     input_dir = Path("Z:/dataset/Motorcycle_Stop_Line_Dataset/Src/Labels/Test")
     output_dir = Path(str(input_dir) + "_obb_pre_labels")
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     # 过滤指定类别 Example: [0, 1, 2, 3]
     selected_classes = None
     # 过滤置信度 Example: 0.5        
-    filter_confidence = None
+    filter_confidence = 0.25
     # True: 保存 Txt 标签文件到 'output_dir' 目录; False: 保存 Json 标签文件到输入目录
     save_txt_file = True
     # True: 显示图片; False: 保存标签文件
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     for image_file in input_dir.rglob("*.*g"):
 
         image = cv2.imread(str(image_file))
-        results = model(image, imgsz=480, conf=0.001)[0]
+        results = model(image, imgsz=480, conf=0.001, iou=0.1)[0]
         detections = sv.Detections.from_ultralytics(results)
 
         if filter_confidence is not None:
