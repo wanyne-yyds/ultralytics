@@ -1,8 +1,8 @@
 import platform
+
 from ultralytics import YOLO
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     # Load a model
     if platform.system().lower() == 'linux':
         model = YOLO('/home/ultralytics/ultralytics/cfg/models/v8/yolov8m.yaml').load(
@@ -15,10 +15,10 @@ if __name__ == '__main__':
         model = YOLO('E:/Code/ultralytics/model/yolov8x.pt')
     else:
         raise NotImplementedError
-    
+
     # Train the model
-    # results = model.train(data='/home/ultralytics/ultralytics/cfg/datasets/ADAS.yaml', 
-    #                       epochs=100, 
+    # results = model.train(data='/home/ultralytics/ultralytics/cfg/datasets/ADAS.yaml',
+    #                       epochs=100,
     #                       imgsz=640,
     #                       batch=128,
     #                       workers=18,

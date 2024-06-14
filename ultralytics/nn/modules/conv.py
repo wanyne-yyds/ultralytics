@@ -21,36 +21,43 @@ __all__ = (
     "CBAM",
     "Concat",
     "RepConv",
-    "InvertedResidual"
+    "InvertedResidual",
 )
 
+
 # 该模块主要实现了倒残差模块
-class InvertedResidual(nn.Module): 
+class InvertedResidual(nn.Module):
     def __init__(self, inp, oup, stride, expand_ratio):  # inp 输入 oup 输出 stride步长 exoand_ratio 按比例扩张
         super(InvertedResidual, self).__init__()
         self.stride = stride
         assert stride in [1, 2]
-        hidden_dim = int(round(inp * expand_ratio))  # 由于有到残差模块有1*1,3*3的卷积模块，所以可以靠expand_rarton来进行升维
-        self.use_res_connect = self.stride == 1 and inp == oup  # 残差连接的判断条件：当步长=1且输入矩阵与输出矩阵的shape相同时进行
+        hidden_dim = int(
+            round(inp * expand_ratio)
+        )  # 由于有到残差模块有1*1,3*3的卷积模块，所以可以靠expand_rarton来进行升维
+        self.use_res_connect = (
+            self.stride == 1 and inp == oup
+        )  # 残差连接的判断条件：当步长=1且输入矩阵与输出矩阵的shape相同时进行
         layers = []
         if expand_ratio != 1:  # 如果expand_ratio不等于1，要做升维操作
             # pw
             layers.append(Conv(inp, hidden_dim, k=1))  # 这里添加的是1*1的卷积操作
-        layers.extend([
-            # dw
-            Conv(hidden_dim, hidden_dim, s=stride, g=hidden_dim),
- 
-            # pw-linear
-            nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),  # 对应图中的黄色模块
-            nn.BatchNorm2d(oup),
-        ])
+        layers.extend(
+            [
+                # dw
+                Conv(hidden_dim, hidden_dim, s=stride, g=hidden_dim),
+                # pw-linear
+                nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),  # 对应图中的黄色模块
+                nn.BatchNorm2d(oup),
+            ]
+        )
         self.conv = nn.Sequential(*layers)  # 将layers列表中的元素解开依次传入nn.Sequential
- 
+
     def forward(self, x):
         if self.use_res_connect:  # 如果使用了残差连接，就会进行一个x+的操作
             return x + self.conv(x)
         else:
             return self.conv(x)  # 否则不做操作
+
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
     """Pad to 'same' shape outputs."""
