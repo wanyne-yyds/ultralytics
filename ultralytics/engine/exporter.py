@@ -402,7 +402,7 @@ class Exporter:
             output_names = ["obj8", "cls8", "angle8",
                             "obj16", "cls16", "angle16",
                             "obj32", "cls32", "angle32",]
-        elif isinstance(self.model, DetectionModel):
+        else:
             output_names = ["output0"]
         
         dynamic = self.args.dynamic
