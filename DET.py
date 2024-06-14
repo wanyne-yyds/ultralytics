@@ -4,15 +4,16 @@ from ultralytics import YOLO
 
 if __name__ == "__main__":
     # Load a model
-    if platform.system().lower() == 'linux':
-        model = YOLO('/home/ultralytics/ultralytics/cfg/models/v8/yolov8m.yaml').load(
-            '/home/ultralytics/runs/detect/ADAS3/weights/best.pt')
-        
-    elif platform.system().lower() == 'windows':
+    if platform.system().lower() == "linux":
+        model = YOLO("/home/ultralytics/ultralytics/cfg/models/v8/yolov8m.yaml").load(
+            "/home/ultralytics/runs/detect/ADAS3/weights/best.pt"
+        )
+
+    elif platform.system().lower() == "windows":
         # model = YOLO('E:/Code/ultralytics/ultralytics/cfg/models/v8/yolov8m.yaml').load(
         #     'E:/Code/ultralytics/runs/detect/ADAS3/weights/best.pt')
-        
-        model = YOLO('E:/Code/ultralytics/model/yolov8x.pt')
+
+        model = YOLO("E:/Code/ultralytics/model/yolov8x.pt")
     else:
         raise NotImplementedError
 
@@ -27,10 +28,10 @@ if __name__ == "__main__":
     #                       )
 
     # Predict on an image
-    # results = model('F:/Train_Video/ADAS_Train_Video/ADSA_TDX_20240320_0327_train/car_collide_2_cze/Bus/Day_images', 
+    # results = model('F:/Train_Video/ADAS_Train_Video/ADSA_TDX_20240320_0327_train/car_collide_2_cze/Bus/Day_images',
     #                 mode='predict',
     #                 save=True,
-    #                 show_labels=False, 
+    #                 show_labels=False,
     #                 conf=0.5,
     #                 show=True,
     #                 # iou=0.7,

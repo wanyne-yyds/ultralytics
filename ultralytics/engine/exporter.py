@@ -399,9 +399,17 @@ class Exporter:
         if isinstance(self.model, SegmentationModel):
             output_names = ["output0", "output1"]
         elif isinstance(self.model, OBBModel):
-            output_names = ["obj8", "cls8", "angle8",
-                            "obj16", "cls16", "angle16",
-                            "obj32", "cls32", "angle32",]
+            output_names = [
+                "obj8",
+                "cls8",
+                "angle8",
+                "obj16",
+                "cls16",
+                "angle16",
+                "obj32",
+                "cls32",
+                "angle32",
+            ]
         else:
             output_names = ["output0"]
 
